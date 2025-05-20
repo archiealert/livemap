@@ -17,7 +17,7 @@
   <div id="map"></div>
 
   <script>
-    // Kartenlayer definieren
+// Kartenlayer definieren
     var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap-Mitwirkende'
     });
@@ -26,7 +26,7 @@
       attribution: 'Tiles © Esri'
     });
 
-    // Karte initialisieren
+// Karte initialisieren
     var map = L.map('map', {
       center: [47.44, 13.88],
       zoom: 8,
@@ -40,10 +40,39 @@
     };
     L.control.layers(baseMaps).addTo(map);
 
-    // GPX-Datei laden
-    new L.GPX("AT_West_East.gpx", { async: true }).on('loaded', function(e) {
-      map.fitBounds(e.target.getBounds());
-    }).addTo(map);
+// GPX-Track laden
+new L.GPX("AT_West_East.gpx", {
+  async: true,
+  marker_options: {
+    startIconUrl: null,
+    endIconUrl: null,
+    shadowUrl: null
+  }
+}).on('loaded', function(e) {
+  map.fitBounds(e.target.getBounds());
+
+// GPX-Trackpunkte extrahieren
+  const line = e.target.getLayers()[0]; // polyline
+  const latlngs = line.getLatLngs();
+
+  let distance = 0;
+  let nextKm = 10;
+
+  for (let i = 1; i < latlngs.length; i++) {
+    const segDist = latlngs[i - 1].distanceTo(latlngs[i]) / 1000; // in km
+    distance += segDist;
+
+    if (distance >= nextKm) {
+      L.marker(latlngs[i])
+        .addTo(map)
+        .bindPopup(`${nextKm} km`)
+        .bindTooltip(`${nextKm} km`, { permanent: true, direction: 'right', offset: [8, 0] });
+
+      nextKm += 10;
+    }
+  }
+}).addTo(map);
+
 
     // Live-Marker
     var marker = L.marker([0, 0]).addTo(map).bindPopup("Live");
