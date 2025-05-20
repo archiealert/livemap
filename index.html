@@ -51,27 +51,52 @@ new L.GPX("AT_West_East.gpx", {
 }).on('loaded', function(e) {
   map.fitBounds(e.target.getBounds());
 
-// GPX-Trackpunkte extrahieren
-  const line = e.target.getLayers()[0]; // polyline
+  const line = e.target.getLayers()[0];
   const latlngs = line.getLatLngs();
 
   let distance = 0;
-  let nextKm = 50;
+  let nextKm = 50; // alle 50 km statt 10
+
+  // Startmarkierung bei 0 km
+  L.circleMarker(latlngs[0], {
+    radius: 4,
+    color: 'green',
+    fillColor: 'green',
+    fillOpacity: 1
+  }).addTo(map)
+    .bindPopup("0 km")
+    .bindTooltip("0 km", { permanent: true, direction: 'right', offset: [6, 0] });
 
   for (let i = 1; i < latlngs.length; i++) {
-    const segDist = latlngs[i - 1].distanceTo(latlngs[i]) / 1000; // in km
+    const segDist = latlngs[i - 1].distanceTo(latlngs[i]) / 1000;
     distance += segDist;
 
     if (distance >= nextKm) {
-      L.marker(latlngs[i])
-        .addTo(map)
+      L.circleMarker(latlngs[i], {
+        radius: 4,
+        color: '#333',
+        fillColor: '#007bff',
+        fillOpacity: 0.8
+      }).addTo(map)
         .bindPopup(`${nextKm} km`)
-        .bindTooltip(`${nextKm} km`, { permanent: true, direction: 'right', offset: [8, 0] });
+        .bindTooltip(`${nextKm} km`, { permanent: true, direction: 'right', offset: [6, 0] });
 
       nextKm += 50;
     }
   }
+
+  // Endmarkierung (hier weiterhin "1000 km")
+  const last = latlngs[latlngs.length - 1];
+  L.circleMarker(last, {
+    radius: 4,
+    color: 'red',
+    fillColor: 'red',
+    fillOpacity: 1
+  }).addTo(map)
+    .bindPopup("1000 km")
+    .bindTooltip("1000 km", { permanent: true, direction: 'right', offset: [6, 0] });
 }).addTo(map);
+
 
 
     // Live-Marker
