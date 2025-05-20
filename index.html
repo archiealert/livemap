@@ -56,7 +56,7 @@ new L.GPX("AT_West_East.gpx", {
   const latlngs = line.getLatLngs();
 
   let distance = 0;
-  let nextKm = 10;
+  let nextKm = 50;
 
   for (let i = 1; i < latlngs.length; i++) {
     const segDist = latlngs[i - 1].distanceTo(latlngs[i]) / 1000; // in km
@@ -68,7 +68,7 @@ new L.GPX("AT_West_East.gpx", {
         .bindPopup(`${nextKm} km`)
         .bindTooltip(`${nextKm} km`, { permanent: true, direction: 'right', offset: [8, 0] });
 
-      nextKm += 10;
+      nextKm += 50;
     }
   }
 }).addTo(map);
