@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TransAT1000</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-gpx/gpx.min.js"></script>
+  <style>
+    body { margin: 0; }
+    #map { height: 90vh; }
+    h2 { text-align: center; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>TransAT 1000</h2>
+  <div id="map"></div>
+
+  <script>
+    // Kartenlayer definieren
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap-Mitwirkende'
+    });
+
+    var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri'
+    });
+
+    // Karte initialisieren
+    var map = L.map('map', {
+      center: [48.13, 11.58],
+      zoom: 13,
+      layers: [osm]
+    });
+
+    // Layer-Control hinzufügen
+    var baseMaps = {
+      "Karte (OSM)": osm,
+      "Satellit (Esri)": satellite
+    };
+    L.control.layers(baseMaps).addTo(map);
+
+    // GPX-Datei laden
+    new L.GPX("AT_West_East.gpx", { async: true }).on('loaded', function(e) {
+      map.fitBounds(e.target.getBounds());
+    }).addTo(map);
+
+    // Live-Marker
+    var marker = L.marker([0, 0]).addTo(map).bindPopup("Live");
+
+    // Liveposition aktualisieren
+    async function updatePosition() {
+      try {
+        const res = await fetch("https://MEIN-TRACCAR.onrender.com/api/positions", {
+          headers: {
+            "Authorization": "Basic " + btoa("DEIN_USER:DEIN_PASS")
+          }
+        });
+        const data = await res.json();
+        const pos = data.find(p => p.deviceId === DEINE_DEVICE_ID);
+        if (pos) {
+          marker.setLatLng([pos.latitude, pos.longitude]);
+        }
+      } catch (err) {
+        console.error("Fehler bei Positionsabfrage", err);
+      }
+    }
+
+    setInterval(updatePosition, 10000);
+  </script>
+</body>
+</html>
