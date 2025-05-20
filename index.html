@@ -1,205 +1,179 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>TransAT1000</title>
+  <title>JWs TransAT1000</title>
   <meta charset="utf-8" />
-<style>
-  .title {
-    text-align: center;
-    font-family: "Segoe UI", "Helvetica Neue", sans-serif;
-    font-size: 2em;
-    font-weight: 600;
-    margin: 20px 0;
-  }
-</style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.4.0/gpx.min.js"></script>
   <style>
     body { margin: 0; }
     #map { height: 90vh; }
-    h2 { text-align: center; margin-top: 10px; }
+    h2 {
+      text-align: center;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      font-size: 2em;
+      font-weight: 600;
+      margin: 20px 0;
+    }
+    .leaflet-tooltip.small-tooltip {
+      font-size: 10px;
+      padding: 2px 4px;
+      background-color: rgba(255, 255, 255, 0.8);
+      color: #333;
+      border: 1px solid #aaa;
+      border-radius: 3px;
+    }
   </style>
-  <style>
-  .leaflet-tooltip.small-tooltip {
-    font-size: 10px;
-    padding: 2px 4px;
-    background-color: rgba(255, 255, 255, 0.8);
-    color: #333;
-    border: 1px solid #aaa;
-    border-radius: 3px;
-  }
-</style>  
 </head>
 <body>
-<h2 class="title">JWs TransAT1000</h2>
-  <div id="map"></div>
+<h2>JWs TransAT1000</h2>
+<div id="map"></div>
 
-  <script>
-// Kartenlayer definieren
+<script>
+  // Kartenlayer definieren
+  const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap-Mitwirkende'
+  });
 
-// Standard-OSM
-const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap-Mitwirkende'
-});
+  const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles © Esri'
+  });
 
-// Esri Satellit
-const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  attribution: 'Tiles © Esri'
-});
+  const esriHybrid = L.layerGroup([
+    esriSat,
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Labels © Esri',
+      opacity: 0.9
+    })
+  ]);
 
-// Esri Hybrid (Satellit + Labels)
-const esriHybrid = L.layerGroup([
-  esriSat,
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Labels © Esri',
-    opacity: 0.9
-  })
-]);
+  const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap & CartoDB',
+    subdomains: 'abcd'
+  });
 
-// Dark OSM (CartoDB Dark Matter)
-const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  attribution: '© OpenStreetMap & CartoDB',
-  subdomains: 'abcd'
-});
+  // Karte initialisieren
+  const map = L.map('map', {
+    center: [47.44, 13.88],
+    zoom: 8,
+    layers: [esriHybrid]
+  });
 
-// Karte initialisieren
+  const baseMaps = {
+    "Karte (OSM)": osm,
+    "Satellit (Esri)": esriSat,
+    "Hybrid (Esri)": esriHybrid,
+    "Dunkel (CartoDB)": dark
+  };
 
-const map = L.map('map', {
-  center: [47.44, 13.88],
-  zoom: 8,
-  layers: [esriHybrid] // oder osm, dark, esriSat, esriHybrid
-});
+  L.control.layers(baseMaps).addTo(map);
 
-    // Layer-Control hinzufügen
-const baseMaps = {
-  "Karte (OSM)": osm,
-  "Satellit (Esri)": esriSat,
-  "Hybrid (Esri)": esriHybrid,
-  "Dunkel (CartoDB)": dark
-};
-
-L.control.layers(baseMaps).addTo(map);
-
-// GPX-Track laden
-new L.GPX("AT_West_East.gpx", {
-  async: true,
-  marker_options: {
-    startIconUrl: null,
-    endIconUrl: null,
-    shadowUrl: null
-  }
-}).on('loaded', function(e) {
-  map.fitBounds(e.target.getBounds());
-
-  const line = e.target.getLayers()[0];
-  const latlngs = line.getLatLngs();
-
-  let distance = 0;
-  let nextKm = 50;
-
-  // Startmarkierung
-  L.circleMarker(latlngs[0], {
-    radius: 4,
-    color: 'green',
-    fillColor: 'green',
-    fillOpacity: 0.5
-  }).addTo(map)
-    .bindPopup("0 km")
-    .bindTooltip("0 km", {
-      permanent: true,
-      direction: 'right',
-      offset: [6, 0],
-      className: 'small-tooltip'
-    });
-
-  // Zwischenmarkierungen alle 50 km
-  for (let i = 1; i < latlngs.length; i++) {
-    const segDist = latlngs[i - 1].distanceTo(latlngs[i]) / 1000;
-    distance += segDist;
-
-    if (distance >= nextKm) {
-      L.circleMarker(latlngs[i], {
-        radius: 4,
-        color: '#333',
-        fillColor: '#007bff',
-        fillOpacity: 0.5
-      }).addTo(map)
-        .bindPopup(`${nextKm} km`)
-        .bindTooltip(`${nextKm} km`, {
-          permanent: true,
-          direction: 'right',
-          offset: [6, 0],
-          className: 'small-tooltip'
-        });
-
-      nextKm += 50;
+  // GPX-Track laden
+  new L.GPX("AT_West_East.gpx", {
+    async: true,
+    marker_options: {
+      startIconUrl: null,
+      endIconUrl: null,
+      shadowUrl: null
     }
-  }
+  }).on('loaded', function(e) {
+    map.fitBounds(e.target.getBounds());
 
-  // Endmarkierung
-  const last = latlngs[latlngs.length - 1];
-  L.circleMarker(last, {
-    radius: 4,
-    color: 'red',
-    fillColor: 'red',
-    fillOpacity: 0.5
-  }).addTo(map)
-    .bindPopup("1000 km")
-    .bindTooltip("1000 km", {
-      permanent: true,
-      direction: 'right',
-      offset: [6, 0],
-      className: 'small-tooltip'
-    });
-}).addTo(map);
+    const line = e.target.getLayers()[0];
+    const latlngs = line.getLatLngs();
 
-  // Live-Marker initial auf irgendwo (wird aktualisiert)
-let liveMarker = null;
+    let distance = 0;
+    let nextKm = 50;
+
+    L.circleMarker(latlngs[0], {
+      radius: 4,
+      color: 'green',
+      fillColor: 'green',
+      fillOpacity: 0.5
+    }).addTo(map)
+      .bindPopup("0 km")
+      .bindTooltip("0 km", {
+        permanent: true,
+        direction: 'right',
+        offset: [6, 0],
+        className: 'small-tooltip'
+      });
+
+    for (let i = 1; i < latlngs.length; i++) {
+      const segDist = latlngs[i - 1].distanceTo(latlngs[i]) / 1000;
+      distance += segDist;
+
+      if (distance >= nextKm) {
+        L.circleMarker(latlngs[i], {
+          radius: 4,
+          color: '#333',
+          fillColor: '#007bff',
+          fillOpacity: 0.5
+        }).addTo(map)
+          .bindPopup(`${nextKm} km`)
+          .bindTooltip(`${nextKm} km`, {
+            permanent: true,
+            direction: 'right',
+            offset: [6, 0],
+            className: 'small-tooltip'
+          });
+
+        nextKm += 50;
+      }
+    }
+
+    const last = latlngs[latlngs.length - 1];
+    L.circleMarker(last, {
+      radius: 4,
+      color: 'red',
+      fillColor: 'red',
+      fillOpacity: 0.5
+    }).addTo(map)
+      .bindPopup("1000 km")
+      .bindTooltip("1000 km", {
+        permanent: true,
+        direction: 'right',
+        offset: [6, 0],
+        className: 'small-tooltip'
+      });
+  }).addTo(map);
+
+  // Live-Position
+  let liveMarker = null;
+  const deviceId = 1; // ← Stelle sicher, dass das korrekt ist!
 
   async function updatePosition() {
     try {
       const response = await fetch("https://traccar-docker-cfg8.onrender.com/api/positions", {
         headers: {
-          "Authorization": "Basic " + btoa("admin:Lagwagon") // Ersetze mit deinem Benutzer:Passwort
+          "Authorization": "Basic " + btoa("admin:Lagwagon")
         }
       });
 
       const data = await response.json();
-
-      // Beispiel: filtere nach deinem Device ID (anpassen!)
-      const deviceId = 1; 
       const pos = data.find(p => p.deviceId === deviceId);
 
       if (pos) {
-          const lat = pos.latitude;
-          const lon = pos.longitude;
-          const time = new Date(pos.serverTime).toLocaleString();
+        const lat = pos.latitude;
+        const lon = pos.longitude;
+        const time = new Date(pos.serverTime).toLocaleString();
 
-          if (!liveMarker) {
-            liveMarker = L.marker([lat, lon]).addTo(map).bindPopup("");
-          }
-
-          liveMarker.setLatLng([lat, lon])
-            .setPopupContent(`Live-Position<br>${time}`)
-            .openPopup();
+        if (!liveMarker) {
+          liveMarker = L.marker([lat, lon]).addTo(map);
         }
 
-        // Optional: Karte auf aktuelle Position zentrieren
-        // map.panTo([lat, lon]);
+        liveMarker.setLatLng([lat, lon])
+                  .setPopupContent(`Live-Position<br>${time}`)
+                  .openPopup();
       }
     } catch (error) {
       console.error("Fehler bei Positionsabfrage:", error);
     }
   }
 
-  // Alle 10 Sekunden aktualisieren
-  setInterval(updatePosition, 10000);
-  updatePosition(); // Sofort laden
-    
+  updatePosition();               // Initial laden
+  setInterval(updatePosition, 10000); // Alle 10 Sekunden
 </script>
-
-    
-  </script>
 </body>
 </html>
