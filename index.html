@@ -11,6 +11,16 @@
     #map { height: 90vh; }
     h2 { text-align: center; margin-top: 10px; }
   </style>
+  <style>
+  .leaflet-tooltip.small-tooltip {
+    font-size: 10px;
+    padding: 2px 4px;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #333;
+    border: 1px solid #aaa;
+    border-radius: 3px;
+  }
+</style>  
 </head>
 <body>
   <h2>TransAT 1000</h2>
@@ -55,18 +65,24 @@ new L.GPX("AT_West_East.gpx", {
   const latlngs = line.getLatLngs();
 
   let distance = 0;
-  let nextKm = 50; // alle 50 km statt 10
+  let nextKm = 50;
 
-  // Startmarkierung bei 0 km
+  // Startmarkierung
   L.circleMarker(latlngs[0], {
     radius: 4,
     color: 'green',
     fillColor: 'green',
-    fillOpacity: 1
+    fillOpacity: 0.5
   }).addTo(map)
     .bindPopup("0 km")
-    .bindTooltip("0 km", { permanent: true, direction: 'right', offset: [6, 0] });
+    .bindTooltip("0 km", {
+      permanent: true,
+      direction: 'right',
+      offset: [6, 0],
+      className: 'small-tooltip'
+    });
 
+  // Zwischenmarkierungen alle 50 km
   for (let i = 1; i < latlngs.length; i++) {
     const segDist = latlngs[i - 1].distanceTo(latlngs[i]) / 1000;
     distance += segDist;
@@ -76,25 +92,35 @@ new L.GPX("AT_West_East.gpx", {
         radius: 4,
         color: '#333',
         fillColor: '#007bff',
-        fillOpacity: 0.8
+        fillOpacity: 0.5
       }).addTo(map)
         .bindPopup(`${nextKm} km`)
-        .bindTooltip(`${nextKm} km`, { permanent: true, direction: 'right', offset: [6, 0] });
+        .bindTooltip(`${nextKm} km`, {
+          permanent: true,
+          direction: 'right',
+          offset: [6, 0],
+          className: 'small-tooltip'
+        });
 
       nextKm += 50;
     }
   }
 
-  // Endmarkierung (hier weiterhin "1000 km")
+  // Endmarkierung
   const last = latlngs[latlngs.length - 1];
   L.circleMarker(last, {
     radius: 4,
     color: 'red',
     fillColor: 'red',
-    fillOpacity: 1
+    fillOpacity: 0.5
   }).addTo(map)
     .bindPopup("1000 km")
-    .bindTooltip("1000 km", { permanent: true, direction: 'right', offset: [6, 0] });
+    .bindTooltip("1000 km", {
+      permanent: true,
+      direction: 'right',
+      offset: [6, 0],
+      className: 'small-tooltip'
+    });
 }).addTo(map);
 
 
