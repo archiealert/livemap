@@ -168,7 +168,7 @@ new L.GPX("AT_West_East.gpx", {
       const data = await response.json();
 
       // Beispiel: filtere nach deinem Device ID (anpassen!)
-      const deviceId = 631561; 
+      const deviceId = 1; 
       const pos = data.find(p => p.deviceId === deviceId);
 
       if (pos) {
