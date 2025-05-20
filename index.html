@@ -28,27 +28,49 @@
 
   <script>
 // Kartenlayer definieren
-    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap-Mitwirkende'
-    });
 
-    var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles © Esri'
-    });
+// Standard-OSM
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap-Mitwirkende'
+});
+
+// Esri Satellit
+const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles © Esri'
+});
+
+// Esri Hybrid (Satellit + Labels)
+const esriHybrid = L.layerGroup([
+  esriSat,
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Labels © Esri',
+    opacity: 0.9
+  })
+]);
+
+// Dark OSM (CartoDB Dark Matter)
+const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap & CartoDB',
+  subdomains: 'abcd'
+});
 
 // Karte initialisieren
-    var map = L.map('map', {
-      center: [47.44, 13.88],
-      zoom: 8,
-      layers: [osm]
-    });
+
+const map = L.map('map', {
+  center: [47.44, 13.88],
+  zoom: 8,
+  layers: [osm] // oder dark, esriSat, esriHybrid
+});
 
     // Layer-Control hinzufügen
-    var baseMaps = {
-      "Karte (OSM)": osm,
-      "Satellit (Esri)": satellite
-    };
-    L.control.layers(baseMaps).addTo(map);
+const baseMaps = {
+  "Karte (OSM)": osm,
+  "Satellit (Esri)": esriSat,
+  "Hybrid (Esri)": esriHybrid,
+  "Dunkel (CartoDB)": dark
+};
+
+L.control.layers(baseMaps).addTo(map);
 
 // GPX-Track laden
 new L.GPX("AT_West_East.gpx", {
