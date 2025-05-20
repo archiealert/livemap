@@ -154,30 +154,47 @@ new L.GPX("AT_West_East.gpx", {
     });
 }).addTo(map);
 
+  // Live-Marker initial auf irgendwo (wird aktualisiert)
+  let liveMarker = L.marker([0, 0]).addTo(map).bindPopup("Live-Position");
 
-
-    // Live-Marker
-    var marker = L.marker([0, 0]).addTo(map).bindPopup("Live");
-
-    // Liveposition aktualisieren
-    async function updatePosition() {
-      try {
-        const res = await fetch("https://traccar-docker-cfg8.onrender.com/api/positions", {
-          headers: {
-            "Authorization": "Basic " + btoa("admin:admin")
-          }
-        });
-        const data = await res.json();
-        const pos = data.find(p => p.deviceId === 631561);
-        if (pos) {
-          marker.setLatLng([pos.latitude, pos.longitude]);
+  async function updatePosition() {
+    try {
+      const response = await fetch("https://traccar-docker-cfg8.onrender.com/api/positions", {
+        headers: {
+          "Authorization": "Basic " + btoa("admin:admin") // Ersetze mit deinem Benutzer:Passwort
         }
-      } catch (err) {
-        console.error("Fehler bei Positionsabfrage", err);
-      }
-    }
+      });
 
-    setInterval(updatePosition, 10000);
+      const data = await response.json();
+
+      // Beispiel: filtere nach deinem Device ID (anpassen!)
+      const deviceId = 631561; 
+      const pos = data.find(p => p.deviceId === deviceId);
+
+      if (pos) {
+        const lat = pos.latitude;
+        const lon = pos.longitude;
+        const time = new Date(pos.serverTime).toLocaleString();
+
+        liveMarker.setLatLng([lat, lon])
+                  .setPopupContent(`Live-Position<br>${time}`)
+                  .openPopup();
+
+        // Optional: Karte auf aktuelle Position zentrieren
+        // map.panTo([lat, lon]);
+      }
+    } catch (error) {
+      console.error("Fehler bei Positionsabfrage:", error);
+    }
+  }
+
+  // Alle 10 Sekunden aktualisieren
+  setInterval(updatePosition, 10000);
+  updatePosition(); // Sofort laden
+    
+</script>
+
+    
   </script>
 </body>
 </html>
