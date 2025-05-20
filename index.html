@@ -162,13 +162,13 @@ new L.GPX("AT_West_East.gpx", {
     // Liveposition aktualisieren
     async function updatePosition() {
       try {
-        const res = await fetch("https://MEIN-TRACCAR.onrender.com/api/positions", {
+        const res = await fetch("https://https://traccar-docker-cfg8.onrender.com/api/positions", {
           headers: {
-            "Authorization": "Basic " + btoa("DEIN_USER:DEIN_PASS")
+            "Authorization": "Basic " + btoa("admin:admin")
           }
         });
         const data = await res.json();
-        const pos = data.find(p => p.deviceId === DEINE_DEVICE_ID);
+        const pos = data.find(p => p.deviceId === 631561);
         if (pos) {
           marker.setLatLng([pos.latitude, pos.longitude]);
         }
