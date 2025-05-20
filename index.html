@@ -155,7 +155,7 @@ new L.GPX("AT_West_East.gpx", {
 }).addTo(map);
 
   // Live-Marker initial auf irgendwo (wird aktualisiert)
-  let liveMarker = L.marker([0, 0]).addTo(map).bindPopup("Live-Position");
+let liveMarker = null;
 
   async function updatePosition() {
     try {
@@ -172,13 +172,18 @@ new L.GPX("AT_West_East.gpx", {
       const pos = data.find(p => p.deviceId === deviceId);
 
       if (pos) {
-        const lat = pos.latitude;
-        const lon = pos.longitude;
-        const time = new Date(pos.serverTime).toLocaleString();
+          const lat = pos.latitude;
+          const lon = pos.longitude;
+          const time = new Date(pos.serverTime).toLocaleString();
 
-        liveMarker.setLatLng([lat, lon])
-                  .setPopupContent(`Live-Position<br>${time}`)
-                  .openPopup();
+          if (!liveMarker) {
+            liveMarker = L.marker([lat, lon]).addTo(map).bindPopup("");
+          }
+
+          liveMarker.setLatLng([lat, lon])
+            .setPopupContent(`Live-Position<br>${time}`)
+            .openPopup();
+        }
 
         // Optional: Karte auf aktuelle Position zentrieren
         // map.panTo([lat, lon]);
