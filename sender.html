@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>GPS Sender</title>
+</head>
+<body>
+  <h1>📍 Standort wird gesendet...</h1>
+  <p id="status">Warte auf Position...</p>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+  <script>
+    // 🔐 Deine Firebase-Konfiguration
+    const firebaseConfig = {
+      apiKey: "AIzaSyA7fmQYA2MPSUDq6FzM66ybXY1NXpUlcwE",
+      authDomain: "livegps-d9aee.firebaseapp.com",
+      databaseURL: "https://livegps-d9aee-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "livegps-d9aee",
+      storageBucket: "livegps-d9aee.firebasestorage.app",
+      messagingSenderId: "555361745739",
+      appId: "1:555361745739:web:e5c1f325586218de8a06ce"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const statusEl = document.getElementById("status");
+
+    function sendLocation() {
+      if (!navigator.geolocation) {
+        statusEl.textContent = "Geolocation nicht verfügbar.";
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(position => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const timestamp = Date.now();
+
+        // 🔴 Aktuellen Standort setzen
+        db.ref("liveLocation").set({
+          lat: lat,
+          lng: lng,
+          timestamp: timestamp
+        });
+
+        // 🔵 Historie speichern
+        db.ref("locations/" + timestamp).set({
+          lat: lat,
+          lng: lng
+        });
+
+        const time = new Date(timestamp).toLocaleTimeString();
+        statusEl.textContent = `Letzter Standort: ${lat.toFixed(5)}, ${lng.toFixed(5)} um ${time}`;
+        console.log("Standort gesendet:", lat, lng);
+
+      }, error => {
+        console.error("Standortfehler:", error.message);
+        statusEl.textContent = "Fehler beim Standortabruf: " + error.message;
+      });
+    }
+
+    // ⏱ Alle 60 Sekunden senden
+    setInterval(sendLocation, 60000);
+    sendLocation(); // Sofort starten
+  </script>
+</body>
+</html>
