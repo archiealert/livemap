@@ -31,6 +31,19 @@
 <div id="map"></div>
 
 <script>
+  const firebaseConfig = {
+      apiKey: "AIzaSyA7fmQYA2MPSUDq6FzM66ybXY1NXpUlcwE",
+      authDomain: "livegps-d9aee.firebaseapp.com",
+      databaseURL: "https://livegps-d9aee-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "livegps-d9aee",
+      storageBucket: "livegps-d9aee.firebasestorage.app",
+      messagingSenderId: "555361745739",
+      appId: "1:555361745739:web:e5c1f325586218de8a06ce"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  
   // Kartenlayer definieren
   const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap-Mitwirkende'
@@ -139,37 +152,23 @@
       });
   }).addTo(map);
 
-  // Live-Position
-  let liveMarker = null;
-  const deviceId = 1; // ← Stelle sicher, dass das korrekt ist!
+    const marker = L.marker([0, 0]).addTo(map);
+    marker.bindPopup("Live-Standort");
+  
+// Live-Standort aus Firebase anzeigen
+    const locationRef = db.ref("liveLocation");
 
-  async function updatePosition() {
-    try {
-      const response = await fetch("https://traccar-docker-cfg8.onrender.com/api/positions", {
-        headers: {
-          "Authorization": "Basic " + btoa("admin:Lagwagon")
-        }
-      });
+    locationRef.on("value", snapshot => {
+      const data = snapshot.val();
+      if (data && data.lat && data.lng) {
+        const lat = data.lat;
+        const lng = data.lng;
 
-      const data = await response.json();
-      const pos = data.find(p => p.deviceId === deviceId);
+        marker.setLatLng([lat, lng]);
+        map.setView([lat, lng], 16);
 
-      if (pos) {
-        const lat = pos.latitude;
-        const lon = pos.longitude;
-        const time = new Date(pos.serverTime).toLocaleString();
-
-        if (!liveMarker) {
-          liveMarker = L.marker([lat, lon]).addTo(map);
-        }
-
-        liveMarker.setLatLng([lat, lon])
-                  .setPopupContent(`Live-Position<br>${time}`)
-                  .openPopup();
-      }
-    } catch (error) {
-      console.error("Fehler bei Positionsabfrage:", error);
-    }
+        const time = new Date(data.timestamp);
+        marker.setPopupContent(`Letzter Standort:<br><b>${lat.toFixed(5)}, ${lng.toFixed(5)}</b><br>${time.toLocaleTimeString()}`);
   }
 
   updatePosition();               // Initial laden
