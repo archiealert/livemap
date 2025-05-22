@@ -55,6 +55,10 @@
     attribution: '© OpenStreetMap-Mitwirkende'
   });
 
+   const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles © Esri'
+  });
+  
   const esriHybrid = L.layerGroup([
     esriSat,
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
