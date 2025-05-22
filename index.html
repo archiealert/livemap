@@ -160,7 +160,7 @@
 
     // 📍 Marker und Route initialisieren
     const marker = L.marker([0, 0]).addTo(map);
-    const route = L.polyline([], { color: 'blue', weight: 4 }).addTo(map);
+    const route = L.polyline([], { color: 'green', weight: 4 }).addTo(map);
 
     // 📡 Echtzeit-Ortung aktivieren (liveLocation für aktuellen Punkt, locations für Route)
     const liveRef = db.ref("liveLocation");
