@@ -6,6 +6,10 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.4.0/gpx.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  
+  
   <style>
     body { margin: 0; }
     #map { height: 90vh; }
@@ -30,6 +34,8 @@
 <h2>JWs TransAT1000</h2>
 <div id="map"></div>
 
+
+  
 <script>
   const firebaseConfig = {
       apiKey: "AIzaSyA7fmQYA2MPSUDq6FzM66ybXY1NXpUlcwE",
@@ -152,27 +158,34 @@
       });
   }).addTo(map);
 
+    // 📍 Marker und Route initialisieren
     const marker = L.marker([0, 0]).addTo(map);
-    marker.bindPopup("Live-Standort");
-  
-// Live-Standort aus Firebase anzeigen
-    const locationRef = db.ref("liveLocation");
+    const route = L.polyline([], { color: 'blue', weight: 4 }).addTo(map);
 
-    locationRef.on("value", snapshot => {
+    // 📡 Echtzeit-Ortung aktivieren (liveLocation für aktuellen Punkt, locations für Route)
+    const liveRef = db.ref("liveLocation");
+    const routeRef = db.ref("locations");
+
+    // 🔴 Echtzeit-Position (aktueller Marker)
+    liveRef.on("value", (snapshot) => {
       const data = snapshot.val();
       if (data && data.lat && data.lng) {
-        const lat = data.lat;
-        const lng = data.lng;
+        const latlng = [data.lat, data.lng];
+        marker.setLatLng(latlng);
+        marker.bindPopup("Letzter Standort:<br>" +
+                         `<b>${latlng[0].toFixed(5)}, ${latlng[1].toFixed(5)}</b><br>` +
+                         new Date(data.timestamp).toLocaleTimeString());
+        map.setView(latlng, 16);
+      }
+    });
 
-        marker.setLatLng([lat, lng]);
-        map.setView([lat, lng], 16);
-
-        const time = new Date(data.timestamp);
-        marker.setPopupContent(`Letzter Standort:<br><b>${lat.toFixed(5)}, ${lng.toFixed(5)}</b><br>${time.toLocaleTimeString()}`);
-  }
-
-  updatePosition();               // Initial laden
-  setInterval(updatePosition, 60000); // Alle 1 Minute
+    // 🔵 Route aufzeichnen mit jedem neuen Punkt
+    routeRef.on("child_added", (snapshot) => {
+      const point = snapshot.val();
+      if (point && point.lat && point.lng) {
+        route.addLatLng([point.lat, point.lng]);
+      }
+    });
 
 </script>
 </body>
