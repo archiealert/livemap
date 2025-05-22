@@ -180,12 +180,12 @@
     });
 
     // 🔵 Route aufzeichnen mit jedem neuen Punkt
-    routeRef.on("child_added", (snapshot) => {
-      const point = snapshot.val();
-      if (point && point.lat && point.lng) {
-        route.addLatLng([point.lat, point.lng]);
-      }
-    });
+    //routeRef.on("child_added", (snapshot) => {
+    //  const point = snapshot.val();
+    //  if (point && point.lat && point.lng) {
+    //    route.addLatLng([point.lat, point.lng]);
+    //  }
+    //});
 
 </script>
 </body>
