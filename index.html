@@ -110,7 +110,7 @@
       fillColor: 'green',
       fillOpacity: 0.5
     }).addTo(map)
-      .bindPopup("0 km")
+      //.bindPopup("0 km")
       .bindTooltip("0 km", {
         permanent: true,
         direction: 'right',
@@ -129,7 +129,7 @@
           fillColor: '#007bff',
           fillOpacity: 0.5
         }).addTo(map)
-          .bindPopup(`${nextKm} km`)
+          //.bindPopup(`${nextKm} km`)
           .bindTooltip(`${nextKm} km`, {
             permanent: true,
             direction: 'right',
@@ -171,7 +171,7 @@
       if (data && data.lat && data.lng) {
         const latlng = [data.lat, data.lng];
         marker.setLatLng(latlng);
-        marker.bindPopup("Letzter Standort:<br>" +
+        marker.bindPopup("Last location:<br>" +
                          `<b>${latlng[0].toFixed(5)}, ${latlng[1].toFixed(5)}</b><br>` +
                          new Date(data.timestamp).toLocaleTimeString());
         
