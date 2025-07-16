@@ -48,7 +48,8 @@
         // 🔵 Historie erfassen
         db.ref("locations/" + timestamp).set({
           lat: lat,
-          lng: lng
+          lng: lng,
+          timestamp: timestamp
         });
 
         const time = new Date(timestamp).toLocaleTimeString();
