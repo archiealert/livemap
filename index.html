@@ -186,7 +186,49 @@ const maptilerTopo = L.tileLayer('https://api.maptiler.com/maps/topo-v2/{z}/{x}/
       }
     });
 
-// 🔵 Jeden gespeicherten Punkt als Marker mit Zeit-Tooltip anzeigen
+routeRef.once("value").then(snapshot => {
+  snapshot.forEach(childSnap => {
+    const point = childSnap.val();
+    if (point && point.lat && point.lng && point.timestamp) {
+      const latlng = [point.lat, point.lng];
+
+      const marker = L.circleMarker(latlng, {
+        radius: 5,
+        color: '#007bff',
+        fillColor: '#007bff',
+        fillOpacity: 0.6
+      }).addTo(map);
+
+      marker.bindPopup(
+        new Date(point.timestamp).toLocaleString()
+      );
+    }
+  });
+});
+
+// 🔵 Alte gespeicherte Punkt als Marker mit Zeit-Tooltip anzeigen
+routeRef.once("value").then(snapshot => {
+  snapshot.forEach(childSnap => {
+    const point = childSnap.val();
+    if (point && point.lat && point.lng) {
+      const latlng = [point.lat, point.lng];
+
+      const marker = L.circleMarker(latlng, {
+        radius: 5,
+        color: '#007bff',
+        fillColor: '#007bff',
+        fillOpacity: 0.6
+      }).addTo(map);
+
+      marker.bindPopup(
+        new Date(point.timestamp).toLocaleString()
+      );
+    }
+  });
+});
+
+  
+// 🔵 Jeden neuen gespeicherten Punkt als Marker mit Zeit-Tooltip anzeigen
 routeRef.on("child_added", (snapshot) => {
   const point = snapshot.val();
   if (point && point.lat && point.lng && point.timestamp) {
