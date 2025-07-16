@@ -53,10 +53,10 @@
 
         const time = new Date(timestamp).toLocaleTimeString();
         statusEl.textContent = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)} um ${time}`;
-        console.log("Standort gesendet:", lat, lng);
+        console.log("Location sent:", lat, lng);
       }, error => {
-        console.error("Fehler bei Standortabfrage:", error.message);
-        statusEl.textContent = "Standortfehler: " + error.message;
+        console.error("Error retrieving location:", error.message);
+        statusEl.textContent = "Location error: " + error.message;
       }, {
         enableHighAccuracy: true,
         timeout: 30000,
