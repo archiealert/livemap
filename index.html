@@ -166,9 +166,8 @@ const maptilerTopo = L.tileLayer('https://api.maptiler.com/maps/topo-v2/{z}/{x}/
       });
   }).addTo(map);
 
-    // 📍 Marker und Route initialisieren
+    // 📍 Marker initialisieren
     const marker = L.marker([0, 0]).addTo(map);
-    const route = L.polyline([], { color: 'green', weight: 4 }).addTo(map);
 
     // 📡 Echtzeit-Ortung aktivieren (liveLocation für aktuellen Punkt, locations für Route)
     const liveRef = db.ref("liveLocation");
@@ -187,13 +186,29 @@ const maptilerTopo = L.tileLayer('https://api.maptiler.com/maps/topo-v2/{z}/{x}/
       }
     });
 
-    // 🔵 Route aufzeichnen mit jedem neuen Punkt
-    //routeRef.on("child_added", (snapshot) => {
-    //  const point = snapshot.val();
-    //  if (point && point.lat && point.lng) {
-    //    route.addLatLng([point.lat, point.lng]);
-    //  }
-    //});
+// 🔵 Jeden gespeicherten Punkt als Marker mit Zeit-Tooltip anzeigen
+routeRef.on("child_added", (snapshot) => {
+  const point = snapshot.val();
+  if (point && point.lat && point.lng && point.timestamp) {
+    const latlng = [point.lat, point.lng];
+    
+    L.circleMarker(latlng, {
+      radius: 5,
+      color: '#007bff',
+      fillColor: '#007bff',
+      fillOpacity: 0.6
+    })
+    .addTo(map)
+    .bindTooltip(new Date(point.timestamp).toLocaleTimeString(), {
+      permanent: false,
+      direction: 'top',
+      offset: [0, -5],
+      className: 'small-tooltip'
+    });
+  }
+});
+
+
 
 </script>
 </body>
