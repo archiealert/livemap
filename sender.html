@@ -65,9 +65,10 @@
       });
     }
 
-    // 🕒 Alle 60 Sekunden senden
-    setInterval(sendLocation, 60000);
-    sendLocation(); // Gleich zu Beginn senden
+    // Einmalig senden beim Laden
+    sendLocation();
+
+    
   </script>
 </body>
 </html>
