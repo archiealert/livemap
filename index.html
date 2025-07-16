@@ -191,20 +191,17 @@ routeRef.on("child_added", (snapshot) => {
   const point = snapshot.val();
   if (point && point.lat && point.lng && point.timestamp) {
     const latlng = [point.lat, point.lng];
-    
-    L.circleMarker(latlng, {
+
+    const marker = L.circleMarker(latlng, {
       radius: 5,
       color: '#007bff',
       fillColor: '#007bff',
       fillOpacity: 0.6
-    })
-    .addTo(map)
-    .bindTooltip(new Date(point.timestamp).toLocaleTimeString(), {
-      permanent: false,
-      direction: 'top',
-      offset: [0, -5],
-      className: 'small-tooltip'
-    });
+    }).addTo(map);
+
+    marker.bindPopup(
+      new Date(point.timestamp).toLocaleString()
+    );
   }
 });
 
