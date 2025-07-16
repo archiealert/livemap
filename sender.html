@@ -53,7 +53,7 @@
         });
 
         const time = new Date(timestamp).toLocaleTimeString();
-        statusEl.textContent = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)} um ${time}`;
+        statusEl.textContent = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)} at ${time}`;
         console.log("Location sent:", lat, lng, timestamp);
       }, error => {
         console.error("Error retrieving location:", error.message);
