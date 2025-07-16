@@ -29,7 +29,7 @@
 
     function sendLocation() {
       if (!navigator.geolocation) {
-        statusEl.textContent = "Geolocation nicht verfügbar.";
+        statusEl.textContent = "Geolocation not available.";
         return;
       }
 
@@ -54,7 +54,7 @@
 
         const time = new Date(timestamp).toLocaleTimeString();
         statusEl.textContent = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)} um ${time}`;
-        console.log("Location sent:", lat, lng);
+        console.log("Location sent:", lat, lng, timestamp);
       }, error => {
         console.error("Error retrieving location:", error.message);
         statusEl.textContent = "Location error: " + error.message;
