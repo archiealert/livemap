@@ -9,7 +9,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   
-  
   <style>
     body { margin: 0; }
     #map { height: 90vh; }
@@ -34,8 +33,6 @@
 <h2>It’s not about being fast, it’s about not being slow</h2>
 <div id="map"></div>
 
-
-  
 <script>
   const firebaseConfig = {
       apiKey: "AIzaSyA7fmQYA2MPSUDq6FzM66ybXY1NXpUlcwE",
@@ -47,15 +44,25 @@
       appId: "1:555361745739:web:e5c1f325586218de8a06ce"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-  
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Funktion: Datum + Uhrzeit formatieren (dd.mm.yy hh:mm:ss)
+  function formatDateTimestamp(ts) {
+    const d = new Date(ts);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = String(d.getFullYear()).slice(-2);
+    const time = d.toLocaleTimeString();
+    return `${day}.${month}.${year} ${time}`;
+  }
+
   // Kartenlayer definieren
   const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap-Mitwirkende'
   });
 
-   const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     attribution: 'Tiles © Esri'
   });
   
@@ -70,16 +77,15 @@
   const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
       maxZoom: 17,
       attribution: 'Map data © <a href="https://opentopomap.org">OpenTopoMap</a> contributors'
-    });
+  });
 
-const maptilerTopo = L.tileLayer('https://api.maptiler.com/maps/topo-v2/{z}/{x}/{y}.png?key=JVi3bRa5tWJoBQ7NXU2v', {
-  attribution: '&copy; <a href="https://www.maptiler.com/">MapTiler</a> contributors',
-  tileSize: 512,
-  zoomOffset: -1,
-  maxZoom: 17
-});
+  const maptilerTopo = L.tileLayer('https://api.maptiler.com/maps/topo-v2/{z}/{x}/{y}.png?key=JVi3bRa5tWJoBQ7NXU2v', {
+    attribution: '&copy; <a href="https://www.maptiler.com/">MapTiler</a> contributors',
+    tileSize: 512,
+    zoomOffset: -1,
+    maxZoom: 17
+  });
 
-  
   // Karte initialisieren
   const map = L.map('map', {
     center: [47.44, 13.88],
@@ -119,7 +125,6 @@ const maptilerTopo = L.tileLayer('https://api.maptiler.com/maps/topo-v2/{z}/{x}/
       fillColor: 'green',
       fillOpacity: 0.5
     }).addTo(map)
-      //.bindPopup("0 km")
       .bindTooltip("0 km", {
         permanent: true,
         direction: 'right',
@@ -138,7 +143,6 @@ const maptilerTopo = L.tileLayer('https://api.maptiler.com/maps/topo-v2/{z}/{x}/
           fillColor: '#007bff',
           fillOpacity: 0.5
         }).addTo(map)
-          //.bindPopup(`${nextKm} km`)
           .bindTooltip(`${nextKm} km`, {
             permanent: true,
             direction: 'right',
@@ -157,7 +161,6 @@ const maptilerTopo = L.tileLayer('https://api.maptiler.com/maps/topo-v2/{z}/{x}/
       fillColor: 'red',
       fillOpacity: 0.5
     }).addTo(map)
-      //.bindPopup("430 km")
       .bindTooltip("430 km", {
         permanent: true,
         direction: 'right',
@@ -166,29 +169,47 @@ const maptilerTopo = L.tileLayer('https://api.maptiler.com/maps/topo-v2/{z}/{x}/
       });
   }).addTo(map);
 
-    // 📍 Marker initialisieren
-    const marker = L.marker([0, 0]).addTo(map);
+  // 📍 Marker initialisieren
+  const marker = L.marker([0, 0]).addTo(map);
 
-    // 📡 Echtzeit-Ortung aktivieren (liveLocation für aktuellen Punkt, locations für Route)
-    const liveRef = db.ref("liveLocation");
-    const routeRef = db.ref("locations");
+  // 📡 Echtzeit-Ortung aktivieren (liveLocation für aktuellen Punkt, locations für Route)
+  const liveRef = db.ref("liveLocation");
+  const routeRef = db.ref("locations");
 
-    // 🔴 Echtzeit-Position (aktueller Marker)
-    liveRef.on("value", (snapshot) => {
-      const data = snapshot.val();
-      if (data && data.lat && data.lng) {
-        const latlng = [data.lat, data.lng];
-        marker.setLatLng(latlng);
-        marker.bindPopup("Last location:<br>" +
-                         `<b>${latlng[0].toFixed(5)}, ${latlng[1].toFixed(5)}</b><br>` +
-                         new Date(data.timestamp).toLocaleTimeString());
-        
+  // 🔴 Echtzeit-Position (aktueller Marker)
+  liveRef.on("value", (snapshot) => {
+    const data = snapshot.val();
+    if (data && data.lat && data.lng) {
+      const latlng = [data.lat, data.lng];
+      marker.setLatLng(latlng);
+      marker.bindPopup("Last location:<br>" +
+                       `<b>${latlng[0].toFixed(5)}, ${latlng[1].toFixed(5)}</b><br>` +
+                       formatDateTimestamp(data.timestamp));
+    }
+  });
+
+  // 🔵 Alte gespeicherte Punkte als Marker mit Zeit-Tooltip anzeigen
+  routeRef.once("value").then(snapshot => {
+    snapshot.forEach(childSnap => {
+      const point = childSnap.val();
+      if (point && point.lat && point.lng && point.timestamp) {
+        const latlng = [point.lat, point.lng];
+
+        const marker = L.circleMarker(latlng, {
+          radius: 5,
+          color: '#007bff',
+          fillColor: '#007bff',
+          fillOpacity: 0.6
+        }).addTo(map);
+
+        marker.bindPopup(formatDateTimestamp(point.timestamp));
       }
     });
+  });
 
-routeRef.once("value").then(snapshot => {
-  snapshot.forEach(childSnap => {
-    const point = childSnap.val();
+  // 🔵 Jeden neuen gespeicherten Punkt als Marker mit Zeit-Tooltip anzeigen
+  routeRef.on("child_added", (snapshot) => {
+    const point = snapshot.val();
     if (point && point.lat && point.lng && point.timestamp) {
       const latlng = [point.lat, point.lng];
 
@@ -199,55 +220,9 @@ routeRef.once("value").then(snapshot => {
         fillOpacity: 0.6
       }).addTo(map);
 
-      marker.bindPopup(
-        new Date(point.timestamp).toLocaleString()
-      );
+      marker.bindPopup(formatDateTimestamp(point.timestamp));
     }
   });
-});
-
-// 🔵 Alte gespeicherte Punkt als Marker mit Zeit-Tooltip anzeigen
-routeRef.once("value").then(snapshot => {
-  snapshot.forEach(childSnap => {
-    const point = childSnap.val();
-    if (point && point.lat && point.lng) {
-      const latlng = [point.lat, point.lng];
-
-      const marker = L.circleMarker(latlng, {
-        radius: 5,
-        color: '#007bff',
-        fillColor: '#007bff',
-        fillOpacity: 0.6
-      }).addTo(map);
-
-      marker.bindPopup(
-        new Date(point.timestamp).toLocaleString()
-      );
-    }
-  });
-});
-
-  
-// 🔵 Jeden neuen gespeicherten Punkt als Marker mit Zeit-Tooltip anzeigen
-routeRef.on("child_added", (snapshot) => {
-  const point = snapshot.val();
-  if (point && point.lat && point.lng && point.timestamp) {
-    const latlng = [point.lat, point.lng];
-
-    const marker = L.circleMarker(latlng, {
-      radius: 5,
-      color: '#007bff',
-      fillColor: '#007bff',
-      fillOpacity: 0.6
-    }).addTo(map);
-
-    marker.bindPopup(
-      new Date(point.timestamp).toLocaleString()
-    );
-  }
-});
-
-
 
 </script>
 </body>
