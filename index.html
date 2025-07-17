@@ -168,7 +168,7 @@ const CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_al
       fillColor: 'red',
       fillOpacity: 0.5
     }).addTo(map)
-      .bindTooltip("430 km", {
+      .bindTooltip("Start / Finish 430 km", {
         permanent: true,
         direction: 'right',
         offset: [6, 0],
@@ -204,8 +204,8 @@ const CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_al
 
         const marker = L.circleMarker(latlng, {
           radius: 5,
-          color: '#007bff',
-          fillColor: '#007bff',
+	color: '#FFA500',
+	fillColor: '#FFA500',
           fillOpacity: 0.6
         }).addTo(map);
 
